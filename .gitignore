@@ -1,0 +1,24 @@
+# secrets and credentials
+.secrets/
+*.env
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# virtual environments (if you use one locally)
+.venv/
+venv/
+
+# data files (only if they are private / large / volatile)
+data/
+
+# docker stuff
+pgdata/
+*.log
+
+# editor junk
+.vscode/
+.idea/

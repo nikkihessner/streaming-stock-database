@@ -125,6 +125,7 @@ services:
       - ./Pipfile:/app/Pipfile:ro
       - ./Pipfile.lock:/app/Pipfile.lock:ro
     environment:
+      PYTHONPATH: /app/src
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       PGHOST: db
       PGPORT: 5432
@@ -142,7 +143,7 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
-    command: ["python", "src/hello_world.py"]
+    command: ["python", "src/stock_pipeline/file_watcher.py"]
 
 secrets:
   db_password:

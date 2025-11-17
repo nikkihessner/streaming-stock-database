@@ -90,6 +90,40 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
 
+  # -------- Kafka topics initializer (one-shot) --------
+  kafka-topics-init:
+    image: apache/kafka:4.1.0@sha256:bff074a5d0051dbc0bbbcd25b045bb1fe84833ec0d3c7c965d1797dd289ec88f
+    networks: [internal]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: "no"
+    command: >
+      bash -c '
+        set -e
+        echo "Waiting for Kafka to be ready..."
+        for i in $(seq 1 30); do
+          if /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1; then
+            echo "Kafka is ready"
+            break
+          fi
+          echo "Kafka not ready yet, sleeping..."
+          sleep 2
+        done
+        echo "Creating topics if they do not exist..."
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 \
+          --create --if-not-exists \
+          --topic files_to_process \
+          --partitions 3 \
+          --replication-factor 1 || true
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 \
+          --create --if-not-exists \
+          --topic ohlcv_rows \
+          --partitions 6 \
+          --replication-factor 1 || true
+        echo "Kafka topics initialized."
+      '
+
   # -------- Kafka UI (Provectus) --------
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818
@@ -137,6 +171,8 @@ services:
       db:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      kafka-ui:
         condition: service_healthy
     # security_opt: ["no-new-privileges:true"]
     # cap_drop: ["ALL"]

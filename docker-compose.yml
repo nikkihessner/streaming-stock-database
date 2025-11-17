@@ -142,7 +142,7 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
-    command: ["sleep", "infinity"]
+    command: ["python", "src/hello_world.py"]
 
 secrets:
   db_password:

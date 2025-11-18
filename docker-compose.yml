@@ -155,6 +155,7 @@ services:
     networks: [internal]
     volumes:
       - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
       - ./data:/app/data:ro
       - ./logs:/app/logs
       - ./Pipfile:/app/Pipfile:ro

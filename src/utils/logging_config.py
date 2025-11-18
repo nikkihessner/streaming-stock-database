@@ -11,7 +11,7 @@ def get_logger(name: str) -> logging.Logger:
 
     # Format logs
     formatter = logging.Formatter(
-        "%(asctime)s [%(name)s] [%(levelname)s] %(messages)s"
+        "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
 
     # Rotating file handler (5 MB per file, keep 3 backups)

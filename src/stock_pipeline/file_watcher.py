@@ -1,4 +1,4 @@
-# src/file_watcher.py
+# src/stock_pipeline/file_watcher.py
 import json
 import os
 from pathlib import Path

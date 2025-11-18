@@ -156,6 +156,7 @@ services:
     volumes:
       - ./src:/app/src:ro
       - ./data:/app/data:ro
+      - ./logs:/app/logs
       - ./Pipfile:/app/Pipfile:ro
       - ./Pipfile.lock:/app/Pipfile.lock:ro
     environment:
@@ -179,7 +180,7 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
-    command: ["python", "src/stock_pipeline/file_watcher.py"]
+    command: ["python", "-m", "stock_pipeline.file_watcher"]
 
 secrets:
   db_password:

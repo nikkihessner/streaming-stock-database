@@ -1,7 +1,10 @@
-# src/file_watcher.py
+# src/stock_pipeline/file_watcher.py
 import json
 import os
 from pathlib import Path
+from utils.logging_config import get_logger
+
+log = get_logger("file_watcher")
 
 from confluent_kafka import Producer
 
@@ -21,14 +24,14 @@ def create_producer() -> Producer:
 
 def delivery_report(err, msg):
     if err is not None:
-        print(f"Deliver failed for record {msg.key()}: {err}")
+        log.error(f"Deliver failed for record {msg.key()}: {err}")
     else:
-        print(f"Record sent to {msg.topic()}[{msg.partition()}] at offset {msg.offset()}")
+        log.info(f"Record sent to {msg.topic()}[{msg.partition()}] at offset {msg.offset()}")
 
 def main() -> None:
     files = list_xlsx_files(DATA_DIR)
     if not files:
-        print("No .xlsx files found in ", DATA_DIR)
+        log.info("No .xlsx files found in ", DATA_DIR)
         return
     
     producer = create_producer()
@@ -38,7 +41,7 @@ def main() -> None:
         key = meta["file_id"]
         value = json.dumps(meta)
 
-        print(f"Producing for file {f.name}: {meta}")
+        log.info(f"Producing metadata for file {f.name}: {meta}")
         producer.produce(
             TOPIC,
             key=key.encode("utf-8"),
@@ -47,7 +50,7 @@ def main() -> None:
         )
 
         # Make sure everything is sent before exiting
-        print("Flushing producer...")
+        log.debug("Flushing Kafka producer buffer")
         producer.flush()
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
+import uuid
+import pandas as pd
 from datetime import datetime, timezone
 from pathlib import Path
-import uuid
 from typing import Iterable, List, Dict, Union 
 
 PathLike = Union[str, Path]
@@ -10,7 +11,7 @@ def list_xlsx_files(directory: PathLike) -> List[Path]:
     Return a list of *.xlsx files in the given directory
     """
     dir_path = Path(directory)
-    return sorted(p for p in dir_path.iterdir() if p.is_file() and p.suffix.lower() == ".xlsx")
+    return sorted(p for p in dir_path.iterdir() if p.is_file() and p.suffix.lower() == ".xlsx" and not p.name.startswith("~$"))
 
 def derive_symbol(filename: PathLike) -> str:
     """
@@ -18,6 +19,8 @@ def derive_symbol(filename: PathLike) -> str:
     """
     name = Path(filename).stem 
     symbol = name.split("_", 1)[0]
+    # future: add check against master symbol list
+
     return symbol.upper()
 
 def generate_file_id() -> str:
@@ -40,4 +43,3 @@ def build_file_metadata(path: PathLike, symbol: str | None = None) -> Dict[str, 
         "symbol_hint": symbol,
         "discovered_at": datetime.now(timezone.utc).isoformat(),
     }
-

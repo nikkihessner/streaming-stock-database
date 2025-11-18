@@ -22,3 +22,4 @@ pgdata/
 # editor junk
 .vscode/
 .idea/
+logs/

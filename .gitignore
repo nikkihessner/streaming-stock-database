@@ -22,4 +22,9 @@ pgdata/
 # editor junk
 .vscode/
 .idea/
+
+# logs
 logs/
+
+# pytest cache
+.pytest_cache

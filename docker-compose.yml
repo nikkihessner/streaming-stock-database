@@ -162,6 +162,7 @@ services:
       - ./Pipfile.lock:/app/Pipfile.lock:ro
     environment:
       PYTHONPATH: /app/src
+      APP_ENV: "local"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       PGHOST: db
       PGPORT: 5432

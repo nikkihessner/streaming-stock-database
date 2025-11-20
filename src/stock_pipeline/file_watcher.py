@@ -3,24 +3,13 @@ import json
 import os
 from pathlib import Path
 from utils.logging_config import get_logger
+from stock_pipeline.config import TOPICS, DATA_DIR, get_kafka_bootstrap_servers, get_app_env
+from utils.kafka_utils import create_producer
+from stock_pipeline.utils.file_utils import list_xlsx_files, build_file_metadata
 
 log = get_logger("file_watcher")
 
-from confluent_kafka import Producer
-
-from stock_pipeline.utils.file_utils import list_xlsx_files, build_file_metadata
-
-DATA_DIR = Path("/app/data")
-TOPIC = "files_to_process"
-
-def create_producer() -> Producer:
-    bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-    conf = {
-        "bootstrap.servers": bootstrap_servers,
-        "client.id": "file-watcher",
-        "enable.idempotence": True
-    }
-    return Producer(conf)
+TOPIC = TOPICS.FILES_TO_PROCESS
 
 def delivery_report(err, msg):
     if err is not None:
@@ -34,7 +23,7 @@ def main() -> None:
         log.info("No .xlsx files found in ", DATA_DIR)
         return
     
-    producer = create_producer()
+    producer = create_producer("file-watcher")
 
     for f in files:
         meta = build_file_metadata(f)

@@ -1,5 +1,7 @@
 import os
 from enum import Enum
+from dataclasses import dataclass
+from pathlib import Path
 
 from utils.logging_config import get_logger
 
@@ -9,6 +11,14 @@ class AppEnv(str, Enum):
     LOCAL = "local"
     DEV = "dev"
     PROD = "prod"
+
+@dataclass(frozen=True)
+class KafkaTopics:
+    FILES_TO_PROCESS: str = "files_to_process"
+    ROWS_TO_PROCESS: str = "rows_to_process"
+
+TOPICS = KafkaTopics()
+DATA_DIR = Path("/app/data")
 
 def get_app_env() -> AppEnv:
     raw = os.environ.get("APP_ENV", "local").lower()

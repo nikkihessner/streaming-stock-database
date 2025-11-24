@@ -118,7 +118,7 @@ services:
           --replication-factor 1 || true
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 \
           --create --if-not-exists \
-          --topic ohlcv_rows \
+          --topic rows_to_process \
           --partitions 6 \
           --replication-factor 1 || true
         echo "Kafka topics initialized."
@@ -145,10 +145,10 @@ services:
       test: ["CMD-SHELL", "exit 0"]
       interval: 15s
       timeout: 5s
-      retries: 10    
+      retries: 10
 
-  # -------- Your Python app --------
-  app:
+  # -------- File Watcher Microservice --------
+  file-watcher:
     build:
       context: .
       dockerfile: Dockerfile
@@ -183,6 +183,43 @@ services:
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
     command: ["python", "-m", "stock_pipeline.file_watcher"]
+
+  # -------- Your Python app --------
+  row-atomizer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks: [internal]
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
+      - ./Pipfile:/app/Pipfile:ro
+      - ./Pipfile.lock:/app/Pipfile.lock:ro
+    environment:
+      PYTHONPATH: /app/src
+      APP_ENV: "local"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: appdb
+      PGUSER: appuser
+      PGPASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-ui:
+        condition: service_healthy
+    # security_opt: ["no-new-privileges:true"]
+    # cap_drop: ["ALL"]
+    # read_only: true
+    tmpfs: ["/tmp", "/run"]
+    # Runs idle so you can exec in and run scripts
+    command: ["python", "-m", "stock_pipeline.row_atomizer"]
 
 secrets:
   db_password:

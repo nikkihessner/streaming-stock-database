@@ -8,7 +8,7 @@
   - symbol_hint (string)
   - discovered_at (timestamp)
 
-## ohlcv_rows
+## rows_to_process
 - key: row_id (uuid or file_id+row_index)
 - value:
   - row_id (uuid)

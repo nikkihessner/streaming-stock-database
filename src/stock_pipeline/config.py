@@ -16,6 +16,8 @@ class AppEnv(str, Enum):
 class KafkaTopics:
     FILES_TO_PROCESS: str = "files_to_process"
     ROWS_TO_PROCESS: str = "rows_to_process"
+    FILES_DLQ: str = "files_dlq"
+    ROWS_DLQ: str = "rows_dlq"
 
 TOPICS = KafkaTopics()
 DATA_DIR = Path("/app/data")

@@ -1,8 +1,16 @@
+# macOS Litter
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
 # secrets and credentials
 .secrets/
 *.env
 .env
 .env.*
+env/
+.env/
 
 # Python cache
 __pycache__/
@@ -25,6 +33,9 @@ pgdata/
 
 # logs
 logs/
+*.log
+*.tmp
+*.swp
 
 # pytest cache
 .pytest_cache

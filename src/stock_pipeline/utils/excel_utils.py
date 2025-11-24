@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, Iterator, Optional
@@ -23,7 +21,6 @@ def to_iso_date(value) -> str:
     and return an ISO date string "YYYY-MM-DD".
     """
     if pd.isna(value):
-        log.error("Cannot convert date value to ISO: value is NaN/NA (%r)", value)
         raise ValueError("Date value is NaN/NA, cannot convert to ISO date")
 
     # Already datetime-like
@@ -32,23 +29,20 @@ def to_iso_date(value) -> str:
     if isinstance(value, date):
         return value.isoformat()
 
-    # Excel serial number (float or int)
+    # Excel serial number (float or int). Excel dates start on 1899-12-30.
     if isinstance(value, (int, float)):
         try:
             ts = pd.to_datetime(value, unit="D", origin="1899-12-30")
             return ts.date().isoformat()
         except Exception as exc:
-            log.error("Failed to parse Excel serial date %r: %s", value, exc)
-            raise
+            raise ValueError(f"Failed to parse Excel serial date {value!r}: {exc}") from exc
 
     # Fallback: try to parse as string
     try:
         ts = pd.to_datetime(value)
         return ts.date().isoformat()
     except Exception as exc:
-        log.error("Failed to parse date value %r as string: %s", value, exc)
-        raise
-
+        raise ValueError(f"Failed to parse Excel serial date {value!r}:{exc}") from exc
 
 def iter_ohlcv_rows(
     path: Path,
@@ -92,8 +86,8 @@ def iter_ohlcv_rows(
         symbol_col = normalized["symbol"]
     else:
         # No Symbol column in the file → derive it
-        symbol = derive_symbol(path)
-        if not symbol and not symbol_hint:
+        symbol = derive_symbol(path) or symbol_hint
+        if not symbol:
             log.error(
                 "File %s has no Symbol column and no symbol_hint was provided", path
             )
@@ -101,9 +95,9 @@ def iter_ohlcv_rows(
                 f"File {path} has no Symbol column and no symbol_hint was provided."
             )
 
-        df["Symbol"] = symbol or symbol_hint
+        df["Symbol"] = symbol
         normalized["symbol"] = "Symbol"
-        symbol_col = "Symbol"
+        symbol_col = normalized["symbol"]
 
     # Cache resolved column names
     date_col = normalized["date"]
@@ -114,10 +108,22 @@ def iter_ohlcv_rows(
     volume_col = normalized["volume"]
 
     # --- Iterate rows ---
-    for _, row in df.iterrows():
+    for i, (_, row) in enumerate(df.iterrows()):
         try:
-            symbol_val = str(row[symbol_col]).strip()
             date_val = row[date_col]
+            volume_val = row[volume_col]
+
+            if pd.isna(date_val) or pd.isna(volume_val):
+                log.warning(
+                    "Skipping row %s in %s due to NaN requried fields (date=%r volume=%s)",
+                    i,
+                    path.name,
+                    date_val,
+                    volume_val
+                )
+                continue
+            
+            symbol_val = str(row[symbol_col]).strip()
             trade_date_iso = to_iso_date(date_val)
 
             yield {
@@ -127,9 +133,22 @@ def iter_ohlcv_rows(
                 "high": float(row[high_col]),
                 "low": float(row[low_col]),
                 "close": float(row[close_col]),
-                "volume": int(row[volume_col]),
+                "volume": int(volume_val),
             }
+
+        except ValueError as exc:
+            log.warning(
+                "Skipping row %s in %s due to parse error: %s",
+                i,
+                path.name,
+                exc,
+            )
+            continue
+
         except Exception:
             # Log and re-raise so the caller can decide what to do
-            log.exception("Unexpected failure parsing row in file %s", path)
-            raise
+            log.exception("Unexpected failure parsing row %s in file %s", 
+                i,
+                path.name,
+            )
+            continue

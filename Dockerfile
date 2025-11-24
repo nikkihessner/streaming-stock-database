@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir pipenv
 
 # Copy dependency manifests first
 COPY Pipfile Pipfile.lock ./
-RUN PIPENV_VENV_IN_PROJECT=0 pipenv install --system --deploy
+RUN PIPENV_VENV_IN_PROJECT=0 pipenv install --system --deploy --dev
 
 # Copy the code
 COPY src/ ./src

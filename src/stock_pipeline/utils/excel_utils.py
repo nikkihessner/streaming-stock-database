@@ -114,7 +114,7 @@ def iter_ohlcv_rows(
             volume_val = row[volume_col]
 
             if pd.isna(date_val) or pd.isna(volume_val):
-                log.warning(
+                log.debug(
                     "Skipping row %s in %s due to NaN requried fields (date=%r volume=%s)",
                     i,
                     path.name,

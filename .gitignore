@@ -39,3 +39,6 @@ logs/
 
 # pytest cache
 .pytest_cache
+
+# file archive
+.archive/

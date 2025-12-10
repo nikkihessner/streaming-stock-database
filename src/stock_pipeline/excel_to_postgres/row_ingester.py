@@ -249,6 +249,11 @@ def main() -> None:
                     try:
                         _insert_batch(conn, batch)
                         conn.commit()
+                        
+                        with conn.cursor() as cur:
+                            cur.execute("SELECT COUNT(*) FROM ohlcv;")
+                            count = cur.fetchone()[0]
+                        log.info("After batch commit, ohlcv row count = %s", count)
                         if last_msg is not None:
                             try:
                                 consumer.commit(message=last_msg)

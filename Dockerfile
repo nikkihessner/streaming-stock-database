@@ -33,6 +33,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    librdkafka1 \
+ && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 ARG APP_UID=10001
 RUN useradd -u ${APP_UID} -m appuser

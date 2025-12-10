@@ -152,6 +152,23 @@ services:
       timeout: 5s
       retries: 10
 
+  # -------- Tests ----------------------------
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks: [internal]
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./logs:/app/logs
+      - ./Pipfile:/app/Pipfile:ro
+      - ./Pipfile.lock:/app/Pipfile.lock:ro
+    environment:
+      PYTHONPATH: /app/src
+      APP_ENV: "local"
+    command: ["pytest"]
+
   # -------- File Watcher Microservice --------
   file-watcher:
     build:

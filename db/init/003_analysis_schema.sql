@@ -15,7 +15,7 @@ CREATE TYPE wave_trend_direction AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS analysis_wave_history (
-    id              uuid PRIMARY KEY DEFAULT uuidv7()
+    id              uuid PRIMARY KEY DEFAULT uuidv7(),
 
     symbol          text                NOT NULL,
     candle_date     date                NOT NULL,

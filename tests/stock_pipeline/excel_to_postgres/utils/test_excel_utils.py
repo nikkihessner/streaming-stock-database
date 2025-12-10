@@ -6,8 +6,8 @@ from stock_pipeline.utils.excel_utils import iter_ohlcv_rows
 
 def test_iter_ohlcv_rows_on_real_aapl_file():
     # Locate repo root relative to this test file
-    repo_root = Path(__file__).resolve().parents[1]
-    data_path = repo_root / "data" / "AAPL.xlsx"
+    repo_root = Path(__file__).resolve().parents[3]
+    data_path = repo_root / "test_data" / "AAPL.xlsx"
 
     assert data_path.exists(), f"Test file not found: {data_path}"
 
@@ -38,3 +38,4 @@ def test_iter_ohlcv_rows_on_real_aapl_file():
 
     # trade_date should be ISO-ish: YYYY-MM-DD
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", first["trade_date"])
+

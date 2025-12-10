@@ -152,6 +152,23 @@ services:
       timeout: 5s
       retries: 10
 
+  # -------- Tests ----------------------------
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks: [internal]
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./logs:/app/logs
+      - ./Pipfile:/app/Pipfile:ro
+      - ./Pipfile.lock:/app/Pipfile.lock:ro
+    environment:
+      PYTHONPATH: /app/src
+      APP_ENV: "local"
+    command: ["pytest"]
+
   # -------- File Watcher Microservice --------
   file-watcher:
     build:
@@ -187,7 +204,7 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
-    command: ["python", "-m", "stock_pipeline.file_watcher"]
+    command: ["python", "-m", "stock_pipeline.excel_to_postgres.file_watcher"]
 
   # -------- Your Python app --------
   row-atomizer:
@@ -224,7 +241,7 @@ services:
     # read_only: true
     tmpfs: ["/tmp", "/run"]
     # Runs idle so you can exec in and run scripts
-    command: ["python", "-m", "stock_pipeline.row_atomizer"]
+    command: ["python", "-m", "stock_pipeline.excel_to_postgres.row_atomizer"]
 
   row-ingester:
     build:
@@ -258,7 +275,7 @@ services:
     tmpfs:
       - /tmp
       - /run
-    command: ["python", "-m", "stock_pipeline.row_ingester"]
+    command: ["python", "-m", "stock_pipeline.excel_to_postgres.row_ingester"]
 
 secrets:
   stockdb_password_local:

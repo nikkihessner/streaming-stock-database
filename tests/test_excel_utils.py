@@ -38,3 +38,4 @@ def test_iter_ohlcv_rows_on_real_aapl_file():
 
     # trade_date should be ISO-ish: YYYY-MM-DD
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", first["trade_date"])
+

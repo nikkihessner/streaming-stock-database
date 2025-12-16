@@ -277,6 +277,58 @@ services:
       - /run
     command: ["python", "-m", "stock_pipeline.excel_to_postgres.row_ingester"]
 
+# ---- Stock analysis dev shell --------
+  stock-analysis:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      networks: [internal]
+      volumes:
+        - ./src:/app/src:ro
+        - ./src/tests:/app/tests:ro
+        - ./data:/app/data:ro
+        - ./logs:/app/logs
+        - ./Pipfile:/app/Pipfile:ro
+        - ./Pipfile.lock:/app/Pipfile.lock:ro
+      environment:
+        PYTHONPATH: /app/src
+        APP_ENV: "local"
+        KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+        PGHOST: db
+        PGPORT: 5432
+        PGDATABASE: stockdb_local
+        PGUSER: stockdb_user_local
+        PGPASSWORD_FILE: /run/secrets/stockdb_password_local
+      secrets: [stockdb_password_local]
+      depends_on:
+        db:
+          condition: service_healthy
+        kafka:
+          condition: service_healthy
+        kafka-ui:
+          condition: service_healthy
+      tmpfs:
+        - /tmp
+        - /run
+      command: ["bash", "-lc", "tail -f /dev/null"]
+
+  stock-analysis-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/stock_analysis:/app/stock_analysis:ro
+      - ./logs:/app/logs
+      - ./Pipfile:/app/Pipfile:ro
+      - ./Pipfile.lock:/app/Pipfile.lock:ro
+    environment:
+      PYTHON: /app/src
+      APP_ENV: "local"
+    tmpfs:
+      - /tmp
+      - /run
+    command: ["bash", "-lc", "cd /app/stock_analysis && PYTHONPATH=/app/src pytest -v -s --log-cli-level=DEBUG -o cache_dir=/tmp/pytest_cache tests/stock_analysis/features/test_momentum_velocity.py"]
+
 secrets:
   stockdb_password_local:
     file: .secrets/stockdb_password_local   # keep gitignored

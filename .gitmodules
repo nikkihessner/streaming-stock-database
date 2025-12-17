@@ -1,0 +1,4 @@
+[submodule "src/stock_analysis"]
+	path = src/stock_analysis
+	url = git@github.com:nikkihessner/stock_analysis.git
+    branch = dev

@@ -42,3 +42,9 @@ logs/
 
 # file archive
 .archive/
+
+# local scripts and notes
+scripts/local/*
+docs/prompt_templates/*
+docs/parking_lot.md
+notes/
